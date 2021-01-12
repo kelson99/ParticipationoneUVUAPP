@@ -1,0 +1,273 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.IO;
+
+namespace StateCapSearch
+{
+    public partial class AddStateCapForm : Form
+    {
+        string filename = @"C:\Users\10787709\source\repos\StateCapSearch\StateCapSearch\bin\Debug\statecap.txt";
+
+        public AddStateCapForm()
+        {
+            InitializeComponent();
+        }
+
+        //ignore
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        /// <summary>
+        /// This method is triggered when the user clicks the save button 
+        /// 
+        /// it saves the usersState and capital that was typed in the boxes.
+        /// it then checks to make sure neither are an empty string
+        /// It then creates the userstate cap var seperated by a comma and writes to our file
+        /// and then close the file.
+        /// 
+        /// or if it is unable to do that it will display an error message letting the user know what happened.
+        ///
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnSave_Click(object sender, EventArgs e)
+        {
+            string userState = TxtBoxState.Text;
+            string userCapital = TxtBoxCapital.Text;
+
+            StreamWriter outputfile;
+
+            if (userState != "" && userCapital != "")
+            {
+                string userStateCap = $"{userState},{userCapital}";
+
+                try
+                {
+                    outputfile = File.AppendText(filename);
+                    outputfile.WriteLine(userStateCap);
+                    outputfile.Close();
+
+                    LstBoxStateCaps.Items.Add(userStateCap);
+                    TxtBoxState.Clear();
+                    TxtBoxCapital.Clear();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// This method will load when the program is started. 
+        /// 
+        /// it creates a streamreader then opens our input file and then adds the items to the list box while its not
+        /// at the end of stream.
+        /// It then closes the file.
+        /// 
+        /// Or it displays an error message if the try block failed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AddStateCapForm_Load(object sender, EventArgs e)
+        {
+            StreamReader inputfile;
+
+            try
+            {
+                inputfile = File.OpenText(@"C:\Users\10787709\source\repos\StateCapSearch\StateCapSearch\bin\Debug\statecap.txt");
+
+                while (!inputfile.EndOfStream)
+                {
+                    LstBoxStateCaps.Items.Add(inputfile.ReadLine());
+                }
+
+                inputfile.Close();
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+
+            }
+        }
+    }
+}
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+
+namespace StateCapConsole
+{
+    class Program
+    {
+        static List<string> stateCapList = new List<string>();
+        static Dictionary<string, string> stateCapDict = new Dictionary<string, string>();
+
+        /// <summary>
+        /// This main method will run while our user does not press x. 
+        /// 
+        /// It will first welcome the user and instruct the user of what to do in order to proceed.
+        /// it then enters the while loop and checks if it needs to search by random or using our search dict function or
+        /// the searchList function. It will then print out the appropriate capital or let the user know that it was unable to find
+        /// the capital.
+        /// </summary>
+        /// <param name="args"></param>
+        static void Main(string[] args)
+        {
+            Console.WriteLine("WElcome to the state capital lookup app");
+            Console.WriteLine("---------------------------------------");
+            Console.WriteLine("");
+            Console.WriteLine("Please enter a state and I will return the capital (x to exit)");
+
+            string userinput = Console.ReadLine().ToUpper();
+            ReadStateCaps();
+
+            while (userinput.ToLower() != "x")
+            {
+                string capital = "";
+
+                if (SearchDict(userinput, ref capital))
+                {
+                    Console.WriteLine($"The capital of {userinput} is {capital}");
+                    Console.WriteLine("---------------------------------------");
+                    Console.WriteLine();
+                    Console.WriteLine($"Search for another state or type x to exit");
+                    userinput = Console.ReadLine().ToUpper();
+                }
+                else if (userinput == "RANDOM")
+                {
+                    GetRandomStateCap();
+                    Console.WriteLine("Search for another state or type x to exit");
+                    userinput = Console.ReadLine().ToUpper();
+                }
+
+                else
+                {
+                    Console.WriteLine($"State not found. Search for another state or type x to exit");
+                    userinput = Console.ReadLine().ToUpper();
+                }
+
+                if (SearchList(userinput, ref capital))
+                {
+                    Console.WriteLine($"The capital of {userinput} is {capital}");
+                    Console.WriteLine("---------------------------------------");
+                    Console.WriteLine();
+                    Console.WriteLine($"Search for another state or type x to exit");
+                    userinput = Console.ReadLine().ToUpper();
+                }
+                else
+                {
+                    Console.WriteLine($"State not found. Search for another state or type x to exit");
+                    userinput = Console.ReadLine().ToUpper();
+                }
+            }
+        }
+
+        /// <summary>
+        /// This method will use the random framework to get a random index and then find 
+        /// a random object in our state cap list and print that to the console.
+        /// </summary>
+        private static void GetRandomStateCap()
+        {
+            Random rand = new Random();
+
+            int randArrayIndex = rand.Next(0, stateCapList.Count);
+            Console.WriteLine($"Random state and capital: {stateCapList[randArrayIndex]}");
+
+        }
+
+        /// <summary>
+        /// This method searches through our dict by using the user input and trying to get a value mathcing
+        /// the users input from our dictionary if it succeeds it will return true and assign the capital
+        /// 
+        /// otherwise it will return false.
+        /// </summary>
+        /// <param name="userinput"></param>
+        /// <param name="capital"></param>
+        /// <returns></returns>
+        private static bool SearchDict(string userinput, ref string capital)
+        {
+            if (stateCapDict.TryGetValue(userinput, out capital))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// This method searches our list using the state and gives back the capital by reference.
+        /// it loops through each state in our list and checks if it's equal to the state at that index 
+        /// if it is it will assign the capital reference var and return true
+        /// 
+        /// if it is unable to find the mathcing state it will return false
+        /// </summary>
+        /// <param name="userinput"></param>
+        /// <param name="capital"></param>
+        /// <returns></returns>
+        private static bool SearchList(string userinput, ref string capital)
+        {
+            foreach (string state in stateCapList)
+            {
+                string[] tempstatecap = state.Split(',');
+                if (userinput == tempstatecap[0].ToUpper())
+                {
+                    capital = tempstatecap[1];
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// This method creates a streamReader object and then tries to opne our state cap file, 
+        /// it then creates a temp string and loops while the input is not at the end of stream
+        /// it adds the temp string to our list then splits it  by comma and adds it to our dictionary
+        /// then closes the file.
+        /// 
+        /// In our catch block we display the error message to the user and them know how to proceed.
+        ///
+        /// </summary>
+        private static void ReadStateCaps()
+        {
+            StreamReader inputfile;
+
+            try
+            {
+                inputfile = File.OpenText(@"C:\Users\10787709\source\repos\StateCapSearch\StateCapSearch\bin\Debug\statecap.txt");
+                string tempread = "";
+                while (!inputfile.EndOfStream)
+                {
+                    tempread = inputfile.ReadLine();
+                    stateCapList.Add(tempread.ToUpper());
+
+                    string[] tempstatecap = tempread.Split(',');
+                    stateCapDict.Add(tempstatecap[0].ToUpper(), tempstatecap[1].ToUpper());
+                }
+                inputfile.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine();
+                Console.WriteLine("Press enter to continue");
+                Console.ReadLine();
+            }
+        }
+
+    }
+}
+
