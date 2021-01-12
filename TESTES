@@ -1,0 +1,161 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.IO;
+
+namespace StateCapSearach
+{
+    public partial class AddStateCapForm : Form
+    {
+        //string filename = @"C:\Users\10787709\source\repos\StateCapSearach\bin\Debug\statecap.txt";
+        string filename = @"C:\Users\10787709\source\repos\StateCapSearach\bin\Debug";
+
+        public AddStateCapForm()
+        {
+            InitializeComponent();
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void AddStateCapForm_Load(object sender, EventArgs e)
+        {
+            StreamReader inputfile;
+
+            try
+            {
+                inputfile = File.OpenText(@"C:\Users\10787709\source\repos\StateCapSearach\StateCapSearach\bin\Debug\statecap.txt");
+
+                while (!inputfile.EndOfStream)
+                {
+                    LstBoxStateCaps.Items.Add(inputfile.ReadLine());
+                }
+
+                inputfile.Close();
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                
+            }
+        }
+
+        private void BtnSave_Click(object sender, EventArgs e)
+        {
+            string userState = TxtBoxState.Text;
+            string userCapital = TxtBoxCapital.Text;
+
+            
+
+
+            StreamWriter outputfile;
+
+            if (userState != "" && userCapital != "")
+            {
+                string userStateCap = $"{userState},{userCapital}";
+
+                try
+                {
+                    outputfile = File.AppendText(filename);
+                    outputfile.WriteLine(userStateCap);
+                    outputfile.Close();
+
+                    LstBoxStateCaps.Items.Add(userStateCap);
+                    TxtBoxState.Clear();
+                    TxtBoxCapital.Clear();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+        }
+
+        private void LstBoxStateCaps_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void TxtBoxCapital_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void TxtBoxState_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label5_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
+
+
+
+--------------------------------------------------
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+
+namespace StateCapitalConsole
+{
+    class Program
+    {
+        static List<string> stateCapList = new List<string>();
+        static Dictionary<string, string> stateCapDict = new Dictionary<string, string>();
+
+        static void Main(string[] args)
+        {
+            ReadStateCaps();
+            Console.WriteLine(stateCapList[43]);
+        }
+
+        private static void ReadStateCaps()
+        {
+            StreamReader inputfile;
+
+            try
+            {
+                inputfile = File.OpenText(@"C:\Users\10787709\source\repos\StateCapSearach\statecap.txt");
+                string tempread = "";
+                while (!inputfile.EndOfStream)
+                {
+                    tempread = inputfile.ReadLine();
+                    stateCapList.Add(tempread);
+
+                    string[] tempstatecap = tempread.Split(',');
+                    stateCapDict.Add(tempstatecap[0], tempstatecap[1]);
+                }
+                inputfile.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine();
+                Console.WriteLine("Press enter to continue");
+                Console.ReadLine();
+            }
+        }
+    }
+}
+
+
+
+
