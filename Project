@@ -1,0 +1,171 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+
+namespace CollegeAndCitiesConsole
+{
+    class Program
+    {
+       
+        static Dictionary<string, string> collegeCityDict = new Dictionary<string, string>();
+        static void Main(string[] args)
+        {
+
+            Console.WriteLine("Welcome to the College Search App!");
+            Console.WriteLine("---------------------------------------");
+            Console.WriteLine("");
+            Console.WriteLine("Please enter a college and I will return the city. (x to exit, random to get a Random College/City)");
+
+            string userinput = Console.ReadLine().ToUpper();
+            readCollegeCities();
+
+            while (userinput.ToLower() != "x")
+            {
+                string city = "";
+
+                if (userinput == "RANDOM")
+                {
+
+                }
+                else
+                {
+                    if (SearchDict(userinput, ref city))
+                    {
+                        Console.WriteLine($"College: {userinput}");
+                        Console.WriteLine($"The city of {userinput} is {city}");
+          
+                        Console.WriteLine();
+                        Console.WriteLine("Please enter a college and I will return the city. (x to exit, random to get a Random College/City)");
+                        userinput = Console.ReadLine().ToUpper();
+                    }
+                    else
+                    {
+                        Console.WriteLine($"No Results were found for {userinput}");
+                        userinput = Console.ReadLine().ToUpper();
+                    }
+                }
+                
+            }
+
+        }
+
+        private static bool SearchDict(string userinput, ref string city)
+        {
+            if (collegeCityDict.TryGetValue(userinput, out city))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private static void readCollegeCities()
+        {
+            StreamReader inputfile;
+
+            try
+            {
+                inputfile = File.OpenText(@"C:\Users\10787709\source\repos\ProjectOneCollegeSearch\ProjectOneCollegeSearch\bin\Debug\CollegeNamesCities.txt");
+                string tempread = "";
+                List<string> tempCollegeCityList = new List<string>();
+
+                while (!inputfile.EndOfStream)
+                {
+                    tempread = inputfile.ReadLine();
+                    tempCollegeCityList.Add(tempread.ToUpper());
+
+                    string[] tempCollegeCity = tempread.Split(',');
+                    collegeCityDict.Add(tempCollegeCity[0].ToUpper(), tempCollegeCity[1].ToUpper());
+
+                }
+                inputfile.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine();
+                Console.WriteLine("Press enter to continue");
+                Console.ReadLine();
+            }
+        }
+    }
+}
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.IO;
+
+namespace ProjectOneCollegeSearch
+{
+    public partial class Form1 : Form
+    {
+        string filePath = @"C:\Users\10787709\source\repos\ProjectOneCollegeSearch\ProjectOneCollegeSearch\bin\Debug\CollegeNamesCities.txt";
+
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            StreamReader inputfile;
+
+            try
+            {
+                inputfile = File.OpenText(filePath);
+
+                while (!inputfile.EndOfStream)
+                {
+                    CollegeLstBox.Items.Add(inputfile.ReadLine());
+                }
+
+                inputfile.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void SaveBtn_Click(object sender, EventArgs e)
+        {
+            string userCollege = CollegeNameTxtBox.Text;
+            string userCity = CityNameTxtBox.Text;
+
+            StreamWriter outputfile;
+
+            if (userCity != "" && userCollege != "")
+            {
+                string userCollegeCity = $"{userCollege},{userCity}";
+
+                try
+                {
+                    outputfile = File.AppendText(filePath);
+                    outputfile.WriteLine(userCollegeCity);
+                    outputfile.Close();
+
+                    CollegeLstBox.Items.Add(userCollegeCity);
+                    CityNameTxtBox.Clear();
+                    CollegeNameTxtBox.Clear();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+        }
+    }
+}
+
